@@ -118,6 +118,7 @@ void dtree_remove_dnode(dtree_t* dtree, int index_dnode)
         }
     }
 
+    dnode_destroy(dtree->floating_dnodes[index_dnode]);
     free(dtree->floating_dnodes);
     dtree->floating_dnodes = floating_dnodes_new;
 }
@@ -144,6 +145,7 @@ void dtree_remove_dedge(dtree_t* dtree, int index_dedge)
         }
     }
 
+    dedge_destroy(dtree->floating_dedges[index_dedge]);
     free(dtree->floating_dedges);
     dtree->floating_dedges = floating_dedges_new;
 }
@@ -156,7 +158,16 @@ void dtree_remove_dedge(dtree_t* dtree, int index_dedge)
  */
 void dtree_set_root_dnode(dtree_t* dtree, int index_dnode)
 {
+    if(dtree->dgraph->num_dnodes > 0)
+    {
+        dtree->dgraph->dnodes[0] = dnode_copy(dtree->floating_dnodes[index_dnode]);
+    } 
+    else
+    {
+        dgraph_add_dnode(dtree->dgraph, dnode_copy(dtree->floating_dnodes[index_dnode]));
+    }
 
+    dtree_remove_dnode(dtree, index_dnode);
 }
 
 /**
@@ -168,7 +179,21 @@ void dtree_set_root_dnode(dtree_t* dtree, int index_dnode)
  */
 void dtree_add_dnode_option(dtree_t* dtree, int index_dnode, int index_dedge)
 {
+    if(index_dnode < 0 || index_dnode >= dtree->dgraph->num_dnodes)
+    {
+        fprintf(stderr, "error: index_dnode is out of range in dtree_add_dnode_option()\n");
+        return;
+    }
 
+    if(index_dedge < 0 || index_dedge >= dtree->num_floating_dedges)
+    {
+        fprintf(stderr, "error: index_dedge is out of range in dtree_add_dnode_option\n");
+        return;
+    }
+
+    dgraph_add_dedge(dtree->dgraph, dedge_copy(dtree->floating_dedges[index_dedge]));
+    dnode_add_option(dtree->dgraph->dnodes[index_dnode], dtree->dgraph->dedges[dtree->dgraph->num_dedges - 1]);
+    dtree_remove_dedge(dtree, index_dedge);
 }
 
 /**

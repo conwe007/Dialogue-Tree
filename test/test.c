@@ -443,12 +443,29 @@ void test_dtree()
 
     // dtree_set_root_dnode test
     bool dtree_set_root_dnode_pass = true;
-
+    dtree_add_dnode(dtree0, "dnode0");
+    dtree_add_dnode(dtree0, "dnode1");
+    dtree_set_root_dnode(dtree0, 0);
+    dtree_set_root_dnode_pass &= (strcmp(dtree0->dgraph->dnodes[0]->text, "dnode0") == 0);
+    dtree_set_root_dnode_pass &= (dtree0->num_floating_dnodes == 1);
+    dtree_set_root_dnode(dtree0, 0);
+    dtree_set_root_dnode_pass &= (strcmp(dtree0->dgraph->dnodes[0]->text, "dnode1") == 0);
+    dtree_set_root_dnode_pass &= (dtree0->num_floating_dnodes == 0);
     fprintf(stderr, "test dtree_set_root_dnode: %s\n", dtree_set_root_dnode_pass ? "pass" : "fail");
 
     // dtree_add_dnode_option test
     bool dtree_add_dnode_option_pass = true;
-
+    dtree_add_dedge(dtree0, "dedge0");
+    dtree_add_dedge(dtree0, "dedge1");
+    dtree_add_dnode_option(dtree0, 0, 0);
+    dtree_add_dnode_option_pass &= (strcmp(dtree0->dgraph->dnodes[0]->options[0]->text, "dedge0") == 0);
+    dtree_set_root_dnode_pass &= (dtree0->num_floating_dedges == 1);
+    dtree_set_root_dnode_pass &= (dtree0->dgraph->num_dedges == 1);
+    dtree_add_dnode_option(dtree0, 0, 0);
+    dtree_add_dnode_option_pass &= (strcmp(dtree0->dgraph->dnodes[0]->options[0]->text, "dedge0") == 0);
+    dtree_add_dnode_option_pass &= (strcmp(dtree0->dgraph->dnodes[0]->options[1]->text, "dedge1") == 0);
+    dtree_set_root_dnode_pass &= (dtree0->num_floating_dedges == 0);
+    dtree_set_root_dnode_pass &= (dtree0->dgraph->num_dedges == 2);
     fprintf(stderr, "test dtree_add_dnode_option: %s\n", dtree_add_dnode_option_pass ? "pass" : "fail");
 
     // dtree_add_dedge_end test
