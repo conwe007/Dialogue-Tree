@@ -3,6 +3,8 @@
 
 #include "dgraph.h"
 
+#define LIST_END ""
+
 typedef struct
 {
     // a list of dnodes not associated with a dgraph
@@ -15,6 +17,13 @@ typedef struct
 
     dgraph_t* dgraph;
 } dtree_t;
+
+typedef struct
+{
+    char** text;
+    int length;
+} tlist_t;
+
 
 /**
  * Allocates memory for a dtree struct
@@ -94,7 +103,7 @@ void dtree_add_dedge_end(dtree_t* dtree, int index_dedge, int index_dnode);
  * @param dtree the dtree to pull the floating node text from
  * @return a list of dnode texts
  */
-char** dtree_get_floating_dnodes(dtree_t* dtree);
+tlist_t* dtree_get_floating_dnodes(dtree_t* dtree);
 
 /**
  * Returns a list of strings representing the text fields of the floating dedges
@@ -102,15 +111,15 @@ char** dtree_get_floating_dnodes(dtree_t* dtree);
  * @param dtree the dtree to pull the floating node text from
  * @return a list of dedge texts
  */
-char** dtree_get_floating_dedges(dtree_t* dtree);
+tlist_t* dtree_get_floating_dedges(dtree_t* dtree);
 
 /**
  * Returns a list of strings representing the text fields of the dnodes in dgraph
  * 
  * @param dtree the dtree to access dgraph from
- * @return a list of dnode texts
+ * @return a list of dnode textsnated by LIST_END
  */
-char** dtree_get_dgraph_dnodes(dtree_t* dtree);
+tlist_t* dtree_get_dgraph_dnodes(dtree_t* dtree);
 
 /**
  * Returns a list of strings representing the text fields of the dedges in dgraph
@@ -118,7 +127,13 @@ char** dtree_get_dgraph_dnodes(dtree_t* dtree);
  * @param dtree the dtree to access dgraph from
  * @return a list of dedge texts
  */
-char** dtree_get_dgraph_dedges(dtree_t* dtree);
+tlist_t* dtree_get_dgraph_dedges(dtree_t* dtree);
 
+/**
+ * Destroys a character array such as those returned by the dtree_get_ functions
+ * 
+ * @param array the array to destroy
+ */
+void dtree_char_array_destroy(tlist_t* tlist);
 
 #endif /* __DTREE_H */

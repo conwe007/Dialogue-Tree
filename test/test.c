@@ -470,27 +470,62 @@ void test_dtree()
 
     // dtree_add_dedge_end test
     bool dtree_add_dedge_end_pass = true;
-
+    dtree_add_dnode(dtree0, "dnode2");
+    dtree_add_dnode(dtree0, "dnode3");
+    dtree_add_dedge_end(dtree0, 0, 0);
+    dtree_add_dedge_end_pass &= (strcmp(dtree0->dgraph->dedges[0]->end->text, "dnode2") == 0);
+    dtree_add_dedge_end_pass &= (dtree0->num_floating_dnodes == 1);
+    dtree_add_dedge_end_pass &= (dtree0->dgraph->num_dnodes == 2);
+    dtree_add_dedge_end(dtree0, 1, 0);
+    dtree_add_dedge_end_pass &= (strcmp(dtree0->dgraph->dedges[0]->end->text, "dnode2") == 0);
+    dtree_add_dedge_end_pass &= (strcmp(dtree0->dgraph->dedges[1]->end->text, "dnode3") == 0);
+    dtree_add_dedge_end_pass &= (dtree0->num_floating_dnodes == 0);
+    dtree_add_dedge_end_pass &= (dtree0->dgraph->num_dnodes == 3);
     fprintf(stderr, "test dtree_add_dedge_end: %s\n", dtree_add_dedge_end_pass ? "pass" : "fail");
 
     // dtree_get_floating_dnodes test
     bool dtree_get_floating_dnodes_pass = true;
-
+    dtree_add_dnode(dtree0, "dnode4");
+    dtree_add_dnode(dtree0, "dnode5");
+    dtree_add_dnode(dtree0, "dnode6");
+    tlist_t* floating_dnodes_text = dtree_get_floating_dnodes(dtree0);
+    dtree_get_floating_dnodes_pass &= (strcmp(floating_dnodes_text->text[0], "dnode4") == 0);
+    dtree_get_floating_dnodes_pass &= (strcmp(floating_dnodes_text->text[1], "dnode5") == 0);
+    dtree_get_floating_dnodes_pass &= (strcmp(floating_dnodes_text->text[2], "dnode6") == 0);
+    dtree_get_floating_dnodes_pass &= (floating_dnodes_text->length == 3);
+    dtree_char_array_destroy(floating_dnodes_text);
     fprintf(stderr, "test dtree_get_floating_dnodes: %s\n", dtree_get_floating_dnodes_pass ? "pass" : "fail");
 
     // dtree_get_floating_dedges test
     bool dtree_get_floating_dedges_pass = true;
-
+    dtree_add_dedge(dtree0, "dedge4");
+    dtree_add_dedge(dtree0, "dedge5");
+    dtree_add_dedge(dtree0, "dedge6");
+    tlist_t* floating_dedges_text = dtree_get_floating_dedges(dtree0);
+    dtree_get_floating_dedges_pass &= (strcmp(floating_dedges_text->text[0], "dedge4") == 0);
+    dtree_get_floating_dedges_pass &= (strcmp(floating_dedges_text->text[1], "dedge5") == 0);
+    dtree_get_floating_dedges_pass &= (strcmp(floating_dedges_text->text[2], "dedge6") == 0);
+    dtree_get_floating_dedges_pass &= (floating_dedges_text->length == 3);
+    dtree_char_array_destroy(floating_dedges_text);
     fprintf(stderr, "test dtree_get_floating_dedges: %s\n", dtree_get_floating_dedges_pass ? "pass" : "fail");
 
     // dtree_get_dgraph_dnodes test
     bool dtree_get_dgraph_dnodes_pass = true;
-
+    tlist_t* dgraph_dnodes_text = dtree_get_dgraph_dnodes(dtree0);
+    dtree_get_dgraph_dnodes_pass &= (strcmp(dgraph_dnodes_text->text[0], "dnode1") == 0);
+    dtree_get_dgraph_dnodes_pass &= (strcmp(dgraph_dnodes_text->text[1], "dnode2") == 0);
+    dtree_get_dgraph_dnodes_pass &= (strcmp(dgraph_dnodes_text->text[2], "dnode3") == 0);
+    dtree_get_dgraph_dnodes_pass &= (dgraph_dnodes_text->length == 3);
+    dtree_char_array_destroy(dgraph_dnodes_text);
     fprintf(stderr, "test dtree_get_dgraph_dnodes: %s\n", dtree_get_dgraph_dnodes_pass ? "pass" : "fail");
 
     // dtree_get_dgraph_dedges test
     bool dtree_get_dgraph_dedges_pass = true;
-
+    tlist_t* dgraph_dedges_text = dtree_get_dgraph_dedges(dtree0);
+    dtree_get_dgraph_dedges_pass &= (strcmp(dgraph_dedges_text->text[0], "dedge0") == 0);
+    dtree_get_dgraph_dedges_pass &= (strcmp(dgraph_dedges_text->text[1], "dedge1") == 0);
+    dtree_get_dgraph_dedges_pass &= (dgraph_dedges_text->length == 2);
+    dtree_char_array_destroy(dgraph_dedges_text);
     fprintf(stderr, "test dtree_get_dgraph_dedges: %s\n", dtree_get_dgraph_dedges_pass ? "pass" : "fail");
 
     fprintf(stderr, "\n");

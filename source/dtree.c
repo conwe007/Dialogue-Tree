@@ -168,6 +168,7 @@ void dtree_set_root_dnode(dtree_t* dtree, int index_dnode)
     }
 
     dtree_remove_dnode(dtree, index_dnode);
+    dgraph_update_adj_matrix(dtree->dgraph);
 }
 
 /**
@@ -193,7 +194,9 @@ void dtree_add_dnode_option(dtree_t* dtree, int index_dnode, int index_dedge)
 
     dgraph_add_dedge(dtree->dgraph, dedge_copy(dtree->floating_dedges[index_dedge]));
     dnode_add_option(dtree->dgraph->dnodes[index_dnode], dtree->dgraph->dedges[dtree->dgraph->num_dedges - 1]);
+    dtree->dgraph->dedges[dtree->dgraph->num_dedges - 1]->start = dtree->dgraph->dnodes[index_dnode];
     dtree_remove_dedge(dtree, index_dedge);
+    dgraph_update_adj_matrix(dtree->dgraph);
 }
 
 /**
@@ -205,7 +208,22 @@ void dtree_add_dnode_option(dtree_t* dtree, int index_dnode, int index_dedge)
  */
 void dtree_add_dedge_end(dtree_t* dtree, int index_dedge, int index_dnode)
 {
+    if(index_dedge < 0 || index_dedge >= dtree->dgraph->num_dedges)
+    {
+        fprintf(stderr, "error: index_dedge is out of range in dtree_add_dedge_end()\n");
+        return;
+    }
 
+    if(index_dnode < 0 || index_dnode >= dtree->num_floating_dnodes)
+    {
+        fprintf(stderr, "error: index_dnode is out of range in dtree_add_dedge_end()\n");
+        return;
+    }
+
+    dgraph_add_dnode(dtree->dgraph, dnode_copy(dtree->floating_dnodes[index_dnode]));
+    dtree->dgraph->dedges[index_dedge]->end = dtree->dgraph->dnodes[dtree->dgraph->num_dnodes - 1];
+    dtree_remove_dnode(dtree, index_dnode);
+    dgraph_update_adj_matrix(dtree->dgraph);
 }
 
 /**
@@ -214,11 +232,19 @@ void dtree_add_dedge_end(dtree_t* dtree, int index_dedge, int index_dnode)
  * @param dtree the dtree to pull the floating node text from
  * @return a list of dnode texts
  */
-char** dtree_get_floating_dnodes(dtree_t* dtree)
+tlist_t* dtree_get_floating_dnodes(dtree_t* dtree)
 {
-    
+    tlist_t* tlist = (tlist_t*)malloc(sizeof(tlist_t));
+    tlist->text = (char**)malloc(sizeof(char*) * dtree->num_floating_dnodes);
+    tlist->length = dtree->num_floating_dnodes;
 
-    return NULL;
+    for(int index_floating_dnodes = 0; index_floating_dnodes < dtree->num_floating_dnodes; index_floating_dnodes++)
+    {
+        tlist->text[index_floating_dnodes] = (char*)malloc(sizeof(char) * STR_LENGTH);
+        strcpy(tlist->text[index_floating_dnodes], dtree->floating_dnodes[index_floating_dnodes]->text);
+    }
+
+    return tlist;
 }
 
 /**
@@ -227,24 +253,40 @@ char** dtree_get_floating_dnodes(dtree_t* dtree)
  * @param dtree the dtree to pull the floating node text from
  * @return a list of dedge texts
  */
-char** dtree_get_floating_dedges(dtree_t* dtree)
+tlist_t* dtree_get_floating_dedges(dtree_t* dtree)
 {
+    tlist_t* tlist = (tlist_t*)malloc(sizeof(tlist_t));
+    tlist->text = (char**)malloc(sizeof(char*) * dtree->num_floating_dedges);
+    tlist->length = dtree->num_floating_dedges;
 
+    for(int index_floating_dedges = 0; index_floating_dedges < dtree->num_floating_dedges; index_floating_dedges++)
+    {
+        tlist->text[index_floating_dedges] = (char*)malloc(sizeof(char) * STR_LENGTH);
+        strcpy(tlist->text[index_floating_dedges], dtree->floating_dedges[index_floating_dedges]->text);
+    }
 
-    return NULL;
+    return tlist;
 }
 
 /**
  * Returns a list of strings representing the text fields of the dnodes in dgraph
  * 
  * @param dtree the dtree to access dgraph from
- * @return a list of dnode texts
+ * @return a list of dnode textsnated by LIST_END
  */
-char** dtree_get_dgraph_dnodes(dtree_t* dtree)
+tlist_t* dtree_get_dgraph_dnodes(dtree_t* dtree)
 {
+    tlist_t* tlist = (tlist_t*)malloc(sizeof(tlist_t));
+    tlist->text = (char**)malloc(sizeof(char*) * dtree->dgraph->num_dnodes);
+    tlist->length = dtree->dgraph->num_dnodes;
 
+    for(int index_dnode = 0; index_dnode < dtree->dgraph->num_dnodes; index_dnode++)
+    {
+        tlist->text[index_dnode] = (char*)malloc(sizeof(char) * STR_LENGTH);
+        strcpy(tlist->text[index_dnode], dtree->dgraph->dnodes[index_dnode]->text);
+    }
 
-    return NULL;
+    return tlist;
 }
 
 /**
@@ -253,11 +295,32 @@ char** dtree_get_dgraph_dnodes(dtree_t* dtree)
  * @param dtree the dtree to access dgraph from
  * @return a list of dedge texts
  */
-char** dtree_get_dgraph_dedges(dtree_t* dtree)
+tlist_t* dtree_get_dgraph_dedges(dtree_t* dtree)
 {
+    tlist_t* tlist = (tlist_t*)malloc(sizeof(tlist_t));
+    tlist->text = (char**)malloc(sizeof(char*) * dtree->dgraph->num_dedges);
+    tlist->length = dtree->dgraph->num_dedges;
 
+    for(int index_dedge = 0; index_dedge < dtree->dgraph->num_dedges; index_dedge++)
+    {
+        tlist->text[index_dedge] = (char*)malloc(sizeof(char) * STR_LENGTH);
+        strcpy(tlist->text[index_dedge], dtree->dgraph->dedges[index_dedge]->text);
+    }
 
-    return NULL;
+    return tlist;
 }
 
+/**
+ * Destroys a character array such as those returned by the dtree_get_ functions
+ * 
+ * @param array the array to destroy
+ */
+void dtree_char_array_destroy(tlist_t* tlist)
+{
+    for(int index_tlist = 0; index_tlist < tlist->length; index_tlist++)
+    {
+        free(tlist->text[index_tlist]);
+    }
 
+    free(tlist);
+}
